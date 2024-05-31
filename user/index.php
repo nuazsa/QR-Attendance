@@ -16,6 +16,7 @@ if (isset($_POST['logout'])) {
 require_once '../component/connection.php';
 $pdo = connectToDatabase();
 
+date_default_timezone_set('Asia/Jakarta');
 
 $stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_user = :user_id');
 $stmt->bindParam(':user_id', $_SESSION['user_id']);
@@ -155,7 +156,7 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $user) {
                     </div>
                     <div class="link-container">
                         <a href="barcode.php?id=<?= $class['id']; ?>">Open QR</a>
-                        <a href="history.php?id<?= $class['id']; ?>">Attendance Report</a>
+                        <a href="history.php?id=<?= $class['id']; ?>">Attendance Report</a>
                     </div>
                 </div>
             <?php endforeach; ?>

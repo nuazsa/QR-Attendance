@@ -9,9 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../component/connection.php';
 $pdo = connectToDatabase();
 
-// $stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_user = :user_id');
-// $stmt->bindParam(':user_id', $_SESSION['user_id']);
-// $stmt->execute();
+date_default_timezone_set('Asia/Jakarta');
 
 $stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_kelas = :id_kelas AND id_user = :user_id');
 $stmt->bindParam(':id_kelas', $_GET['id']);
@@ -25,15 +23,13 @@ $stmt->bindParam(':id_kelas', $_GET['id']);
 $stmt->execute();
 
 $class = $stmt->fetch(PDO::FETCH_ASSOC);
-//  $class['tanggal']
-// var_dump($_GET['id']); exit;
 
 $current_date = date('Y-m-d');
-
-if ($qr['status'] == 'success' && '2024-05-28' == $current_date) {
+// var_dump($class['tanggal']);
+if ($qr['status'] == 'success' && $class['tanggal'] == $current_date) {
     header('Location: success.php');
     exit;
-} elseif (!isset($qr['qr_code'])) {
+} elseif (!isset($qr['qr_code']) || $class['tanggal'] != $current_date) {
     echo "<script>
             alert('Class hasnt started yet');
             window.location.href = 'index.php';

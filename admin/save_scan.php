@@ -8,6 +8,8 @@ $data = json_decode(file_get_contents('php://input'), true);
 $scanContent = $data['content'];
 $scanDate = $data['date'];
 
+
+date_default_timezone_set('Asia/Jakarta');
 $current_date = date('Y-m-d');
 $current_time = date('H:i');
 
@@ -19,18 +21,18 @@ $selectStmt->execute();
 $qrcode = $selectStmt->fetch(PDO::FETCH_ASSOC);
 
 // Prepare the SELECT query
-$selectStmt = $pdo->prepare("SELECT MAX(pertemuan)AS pertemuan, tanggal FROM `presensi` WHERE id_kelas = :id_kelas GROUP BY tanggal");
+$selectStmt = $pdo->prepare("SELECT t.pertemuan, t.tanggal FROM presensi t JOIN ( SELECT MAX(mx.pertemuan) AS max_pertemuan FROM presensi mx WHERE mx.id_kelas = :id_kelas ) m ON t.pertemuan = m.max_pertemuan");
 $selectStmt->bindParam(':id_kelas', $qrcode['id_kelas']);
 $selectStmt->execute();
 
 $kelas = $selectStmt->fetch(PDO::FETCH_ASSOC);
-// var_dump($kelas);
 
-if ($kelas['tanggal'] == '2024-05-29') {
+if ($kelas['tanggal'] == $current_date) {
     $pertemuan = $kelas['pertemuan'];
 } else {
     $pertemuan = $kelas['pertemuan'] + 1;
 }
+// var_dump($pertemuan);
 
 
 if ($qrcode) {

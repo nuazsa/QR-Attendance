@@ -9,8 +9,9 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../component/connection.php';
 $pdo = connectToDatabase();
 
+date_default_timezone_set('Asia/Jakarta');
 
-$current_date = '2024-05-28';
+$current_date = date('Y-m-d');
 
 $stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_user = :user_id AND tanggal = :tanggal');
 $stmt->bindParam(':user_id', $_SESSION['user_id']);
@@ -110,7 +111,7 @@ if ($stmt->fetch(PDO::FETCH_ASSOC) == nulL) {
                 <img src="../component/icon/icon.jpg" alt="Success Icon" class="icon-img">
             </div>
             <h1>Successful!!!</h1>
-            <p>terimakasih anda telah sukses melakukan presensi</p>
+            <p>Thank you for your successful attendance.</p>
             <a href="index.php"><i class="fa-solid fa-house-chimney"></i> Back To Home</a>
         </div>
     </section>

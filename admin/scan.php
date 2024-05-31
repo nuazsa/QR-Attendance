@@ -10,17 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../component/connection.php';
 $pdo = connectToDatabase();
 
-// // Memeriksa apakah kelas sedang berlangsung
-// if ($class['tanggal'] == $current_date && ($class['mulai'] <= $current_time && $class['selesai'] >= $current_time)) {
-//     // Kelas sedang berlangsung, lanjutkan proses
-// } else {
-//     // Kelas belum dimulai atau sudah selesai
-//     echo "<script>
-//             alert('Class hasnt started yet or has already finished.');
-//             window.location.href = 'index.php';
-//           </script>";
-//     exit();
-// }
+
 
 $stmt = $pdo->prepare('SELECT * FROM kelas WHERE id = :id');
 $stmt->bindParam(':id', $_GET['id']);
@@ -28,11 +18,15 @@ $stmt->execute();
 
 $class = $stmt->fetch(PDO::FETCH_ASSOC);
 
+
+date_default_timezone_set('Asia/Jakarta');
+
 // Mengambil tanggal dan waktu saat ini
 $current_date = date('Y-m-d');
 $current_time = date('H:i');
 
-if ($class['tanggal'] == '2024-06-03' && ($class['mulai'] <= '19:01' && $class['selesai'] >= '19:01')) {
+// Memeriksa apakah kelas sedang berlangsung
+if ($class['tanggal'] == $current_date && ($class['mulai'] <= $current_time && $class['selesai'] >= $current_time)) {
     $stmt = $pdo->prepare('SELECT id_user FROM qrcodes WHERE id_kelas = :id_kelas');
     $stmt->bindParam(':id_kelas', $_GET['id']);
     $stmt->execute();
@@ -49,12 +43,22 @@ if ($class['tanggal'] == '2024-06-03' && ($class['mulai'] <= '19:01' && $class['
         $stmt->execute();
     }
 } else {
+    // Kelas belum dimulai atau sudah selesai
     echo "<script>
-            alert('class hasnt started yet');
+            alert('Class hasnt started yet or has already finished.');
             window.location.href = 'index.php';
           </script>";
     exit();
 }
+
+// if ($class['tanggal'] == '2024-06-03' && ($class['mulai'] <= '19:01' && $class['selesai'] >= '19:01')) {
+// } else {
+//     echo "<script>
+//             alert('class hasnt started yet');
+//             window.location.href = 'index.php';
+//           </script>";
+//     exit();
+// }
 
 ?>
 

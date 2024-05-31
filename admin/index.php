@@ -13,6 +13,8 @@ if (isset($_POST['logout'])) {
     exit();
 }
 
+date_default_timezone_set('Asia/Jakarta');
+
 require_once '../component/connection.php';
 $pdo = connectToDatabase();
 
@@ -42,7 +44,7 @@ $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <style>
         body {
-            background-image: url('../component/svg/Frame.svg');
+            background-image: url('../component/svg/Frame2.svg');
         }
 
         section {
@@ -68,7 +70,7 @@ $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .class-name {
-            background-color: skyblue;
+            background-color: lightgreen;
             width: 40%;
             padding: 50px 0px;
         }
@@ -94,7 +96,7 @@ $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         button[name="logout"] {
             border: none;
             text-decoration: none;
-            color: #007BFF;
+            color: green;
             background-color: #fff;
             width: 100%;
             padding: 8px 0;
@@ -105,7 +107,7 @@ $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         a:hover,
         button[name="logout"]:hover {
-            background-color: #007BFF;
+            background-color: lightgreen;
             color: #fff;
         }
 
