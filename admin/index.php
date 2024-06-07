@@ -19,7 +19,7 @@ require_once '../component/connection.php';
 $pdo = connectToDatabase();
 
 
-$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_admin = :user_id');
+$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_guru = :user_id');
 $stmt->bindParam(':user_id', $_SESSION['user_id']);
 $stmt->execute();
 
@@ -148,8 +148,8 @@ $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
             <div class="link-container">
-                <a href="scan.php?id=<?= $class['id']; ?>">Open Class</a>
-                <a href="report.php?id=<?= $class['id']; ?>">Attendance Report</a>
+                <a href="barcode.php?id=<?= $class['id_kelas']; ?>">Open Barcode</a>
+                <a href="report.php?id=<?= $class['id_kelas']; ?>">Attendance Report</a>
             </div>
         </div>
         <?php endforeach; ?>

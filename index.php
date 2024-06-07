@@ -18,11 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         session_start();
 
         // Store user information in session variables
-        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_id'] = $user['id_pengguna'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['name'] = $user['name'];
 
-        if ($user['role'] === 'admin') {
+        if ($user['role'] === 'guru') {
             $_SESSION['username'] = $user['username'];
             header('Location: admin/index.php');
             exit;

@@ -13,7 +13,7 @@ $pdo = connectToDatabase();
 date_default_timezone_set('Asia/Jakarta');
 
 // Fetch presence records for the class
-$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id = :id');
+$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_kelas = :id');
 $stmt->bindParam(':id', $_GET['id']);
 $stmt->execute();
 $class = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -27,7 +27,7 @@ $presence = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 // Fetch presence records for the class
-$stmt = $pdo->prepare('SELECT MAX(pertemuan) AS pertemuan FROM presensi WHERE id_kelas = :id_kelas;');
+$stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_kelas = :id_kelas;');
 $stmt->bindParam(':id_kelas', $_GET['id']);
 $stmt->execute();
 $maxpresence = $stmt->fetch(PDO::FETCH_ASSOC);

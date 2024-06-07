@@ -18,14 +18,14 @@ $pdo = connectToDatabase();
 
 date_default_timezone_set('Asia/Jakarta');
 
-$stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_user = :user_id');
+$stmt = $pdo->prepare('SELECT * FROM detail_kelas WHERE id_pengguna = :user_id');
 $stmt->bindParam(':user_id', $_SESSION['user_id']);
 $stmt->execute();
 
 $classes = [];
 foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $user) {
-    $stmt = $pdo->prepare('SELECT * FROM kelas WHERE id = :user_id');
-    $stmt->bindParam(':user_id', $user['id_kelas']);
+    $stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_kelas = :class_id');
+    $stmt->bindParam(':class_id', $user['id_kelas']);
     $stmt->execute();
     $classes[] = $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -44,9 +44,6 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $user) {
     <link rel="shortcut icon" href="../component/svg/Frame1.svg" type="image/x-icon">
     <link rel="stylesheet" href="../component/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-    <!-- Script JS -->
-    <script src="../component/js/date.js"></script>
 
     <style>
         body {
@@ -155,8 +152,8 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $user) {
                         </div>
                     </div>
                     <div class="link-container">
-                        <a href="barcode.php?id=<?= $class['id']; ?>">Open QR</a>
-                        <a href="history.php?id=<?= $class['id']; ?>">Attendance Report</a>
+                        <a href="scan.php?id=<?= $class['id_kelas']; ?>">Scan QR</a>
+                        <a href="history.php?id=<?= $class['id_kelas']; ?>">Attendance Report</a>
                     </div>
                 </div>
             <?php endforeach; ?>

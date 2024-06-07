@@ -18,9 +18,9 @@ $stmt->bindParam(':user_id', $_SESSION['user_id']);
 $stmt->bindParam(':tanggal', $current_date);
 $stmt->execute();
 
-if ($stmt->fetch(PDO::FETCH_ASSOC) == nulL) {
-   header('Location: index.php');
-}
+// if ($stmt->fetch(PDO::FETCH_ASSOC) == nulL) {
+//    header('Location: index.php');
+// }
 
 ?>
 

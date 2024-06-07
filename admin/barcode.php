@@ -10,31 +10,53 @@ require_once '../component/connection.php';
 $pdo = connectToDatabase();
 
 date_default_timezone_set('Asia/Jakarta');
+$current_date = date('Y-m-d');
+$current_time = date('H:i');
 
-$stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_kelas = :id_kelas AND id_user = :user_id');
+$stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_kelas = :id_kelas ORDER BY tanggal_pembuatan DESC');
 $stmt->bindParam(':id_kelas', $_GET['id']);
-$stmt->bindParam(':user_id', $_SESSION['user_id']);
 $stmt->execute();
 
 $qr = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id = :id_kelas');
+$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_kelas = :id_kelas');
 $stmt->bindParam(':id_kelas', $_GET['id']);
 $stmt->execute();
 
 $class = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$current_date = date('Y-m-d');
-// var_dump($class['tanggal']);
-if ($qr['status'] == 'success' && $class['tanggal'] == $current_date) {
-    header('Location: success.php');
-    exit;
-} elseif (!isset($qr['qr_code']) || $class['tanggal'] != $current_date) {
+if ($class['tanggal'] != $current_date || !($class['mulai'] <= $current_time && $class['selesai'] >= $current_time)) {
     echo "<script>
             alert('Class hasnt started yet');
             window.location.href = 'index.php';
           </script>";
     exit;
+}
+
+$qrcode = null;
+if (isset($qr)) {
+    if ($qr['tanggal_pembuatan'] == '2024-06-08') {
+        $qrcode = $qr['qr_code'];
+    } else {
+        $current_date = '2024-06-08';
+        $pertemuan = $qr['pertemuan'] + 1;
+        $qrcode = $_GET['id'].'-'.$pertemuan.'-'.uniqid();
+        
+        $stmt = $pdo->prepare('INSERT INTO `qrcodes`(`id_kelas`, `qr_code`, `pertemuan`, `tanggal_pembuatan`) VALUES (:id_kelas, :qrcode, :pertemuan, :tanggal)');
+        $stmt->bindParam(':id_kelas', $_GET['id']);
+        $stmt->bindParam(':qrcode', $qrcode);
+        $stmt->bindParam(':pertemuan', $pertemuan);
+        $stmt->bindParam(':tanggal', $current_date);
+        $stmt->execute();
+    }
+} else {
+    $qrcode = $_GET['id'].'-1-'.uniqid();
+    
+    $stmt = $pdo->prepare('INSERT INTO `qrcodes`(`id_kelas`, `qr_code`, `pertemuan`, `tanggal_pembuatan`) VALUES (:id_kelas, :qrcode, 1, :tanggal)');
+    $stmt->bindParam(':id_kelas', $_GET['id']);
+    $stmt->bindParam(':qrcode', $qrcode);
+    $stmt->bindParam(':tanggal', $current_date);
+    $stmt->execute();
 }
 ?>
 
@@ -122,10 +144,8 @@ if ($qr['status'] == 'success' && $class['tanggal'] == $current_date) {
             <h1>Scan For Presence</h1>
             <div class="barcode">
                 <?php
-                if (isset($qr)) {
                     require_once '../phpqrcode/qrlib.php';
-                    QRcode::png($qr['qr_code'], 'barcode.png', QR_ECLEVEL_H, 20);
-                }
+                    QRcode::png($qrcode, 'barcode.png', QR_ECLEVEL_H, 20);
                 ?>
                 <img src="barcode.png" alt="" width="100%">
             </div>
