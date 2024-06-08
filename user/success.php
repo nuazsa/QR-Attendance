@@ -13,7 +13,7 @@ date_default_timezone_set('Asia/Jakarta');
 
 $current_date = date('Y-m-d');
 
-$stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_user = :user_id AND tanggal = :tanggal');
+$stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_pengguna = :user_id AND tanggal = :tanggal');
 $stmt->bindParam(':user_id', $_SESSION['user_id']);
 $stmt->bindParam(':tanggal', $current_date);
 $stmt->execute();

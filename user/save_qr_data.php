@@ -1,34 +1,43 @@
 <?php
 // save_qr_data.php
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $scannedText = $_POST['scannedText'];
+    $classId = $_GET['id'];
 
-    // Database connection
-    $host = 'localhost';
-    $db = 'qrattend';
-    $user = 'root';
-    $pass = '';
+    require_once '../component/connection.php';
+    $pdo = connectToDatabase();
 
-    $conn = new mysqli($host, $user, $pass, $db);
+    date_default_timezone_set('Asia/Jakarta');
+    $current_date = date('Y-m-d');
+    $current_time = date('H:i');
 
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+    // Mengambil QR code terbaru dari kelas yang sesuai
+    $stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_kelas = :id_kelas ORDER BY tanggal_pembuatan DESC LIMIT 1');
+    $stmt->bindParam(':id_kelas', $classId);
+    $stmt->execute();
+    
+    $qr_real = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $stmt = $conn->prepare("INSERT INTO `presensi`(`uniq_qr`) VALUES (?)");
-    $stmt->bind_param('s', $scannedText);
+    if ($qr_real && $qr_real['qr_code'] == $scannedText) {
+        // Memasukkan data ke tabel presensi
+        $stmt = $pdo->prepare("INSERT INTO presensi (id_kelas, id_pengguna, id_qrcode, tanggal, jam) VALUES (:id_kelas, :id_pengguna, :id_qrcode, :tanggal, :jam)");
+        $stmt->bindParam(':id_kelas', $classId);
+        $stmt->bindParam(':id_pengguna', $_SESSION['user_id']);
+        $stmt->bindParam(':id_qrcode', $qr_real['id_qrcode']);
+        $stmt->bindParam(':tanggal', $current_date);
+        $stmt->bindParam(':jam', $current_time);
 
-    if ($stmt->execute()) {
-        header('Location: success.php');
-        echo 'Success';
+        if ($stmt->execute()) {
+            echo json_encode(['status' => 'success', 'message' => 'Presence added successfully']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to insert data']);
+        }
     } else {
-        echo 'Error: ' . $stmt->error;
+        echo json_encode(['status' => 'error', 'message' => 'Invalid QR code']);
     }
-
-    $stmt->close();
-    $conn->close();
 } else {
-    echo 'Invalid request method';
+    echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
 }
 ?>

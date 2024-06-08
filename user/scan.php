@@ -12,6 +12,38 @@ if (isset($_POST['logout'])) {
     header('Location: ../index.php');
     exit();
 }
+
+require_once '../component/connection.php';
+$pdo = connectToDatabase();
+
+date_default_timezone_set('Asia/Jakarta');
+$current_date = date('Y-m-d');
+
+$stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_kelas = :id_kelas ORDER BY tanggal_pembuatan DESC');
+$stmt->bindParam(':id_kelas', $_GET['id']);
+$stmt->execute();
+
+$qr = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_kelas = :id_kelas AND id_pengguna = :id_pengguna ORDER BY tanggal DESC');
+$stmt->bindParam(':id_kelas', $_GET['id']);
+$stmt->bindParam(':id_pengguna', $_SESSION['user_id']);
+$stmt->execute();
+
+$presence = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+$qrCode = isset($qr['qr_code']) ? $qr['qr_code'] : null;
+$classId = isset($_GET['id']) ? $_GET['id'] : null;
+
+// var_dump($qr['qr_code']); exit;
+if ($presence) {
+    if ($presence['tanggal'] == $current_date) {
+        header('Location: success.php?id='.$_GET['id']);
+        exit;
+    }
+}
+
 ?>
 
 <!doctype html>
@@ -134,6 +166,11 @@ if (isset($_POST['logout'])) {
         <a href="index.php"><i class="fa-solid fa-house-chimney"></i> Back To Home</a>
     </section>
     <script type="text/javascript">
+        // Pass the QR code from PHP to JavaScript
+        var serverQrCode = <?= json_encode($qrCode); ?>;
+        var classId = <?= json_encode($classId); ?>;
+
+
         function onQRCodeScanned(scannedText) {
             var scannedTextMemo = document.getElementById("scannedTextMemo");
             if (scannedTextMemo) {
@@ -146,13 +183,13 @@ if (isset($_POST['logout'])) {
 
             // Send the scanned text to the server
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "save_qr_data.php", true);
+            xhr.open("POST", "save_qr_data.php?id="+classId, true);
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
-                    if (scannedText === 'Success') {
+                    if (scannedText === serverQrCode) {
                         alert('Presence added successfully');
-                        window.location.href = "success.php";
+                        window.location.href = "success.php?id="+classId;
                     } else {
                         alert('Presence failed to add');
                         console.error(xhr.responseText); // Handle error response

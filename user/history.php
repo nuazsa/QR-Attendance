@@ -12,38 +12,10 @@ $pdo = connectToDatabase();
 date_default_timezone_set('Asia/Jakarta');
 
 // Fetch presence records for the class
-$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id = :id');
+$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_kelas = :id');
 $stmt->bindParam(':id', $_GET['id']);
 $stmt->execute();
 $class = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Fetch presence records for the class
-$stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_user = :id_user');
-$stmt->bindParam(':id_user', $_SESSION['user_id']);
-$stmt->execute();
-$presence = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Fetch presence records for the class
-$stmt = $pdo->prepare('SELECT MAX(pertemuan) AS pertemuan FROM presensi WHERE id_kelas = :id_kelas;');
-$stmt->bindParam(':id_kelas', $_GET['id']);
-$stmt->execute();
-$maxpresence = $stmt->fetch(PDO::FETCH_ASSOC);
-
-$presences = [];
-for ($i = 0; $i < $maxpresence['pertemuan']; $i++) {
-    if (isset($presence[$i]['pertemuan'])) {
-        $presences[] = $presence[$i]['pertemuan'];
-    }
-}
-
-$dates = [];
-for ($i = 0; $i < $maxpresence['pertemuan']; $i++) {
-    if (isset($presence[$i]['tanggal'])) {
-        $dates[] = $presence[$i]['tanggal'];
-    }
-}
-
-// var_dump($dates);
 ?>
 
 <!DOCTYPE html>

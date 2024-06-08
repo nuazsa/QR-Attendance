@@ -9,59 +9,40 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../component/connection.php';
 $pdo = connectToDatabase();
 
-
 date_default_timezone_set('Asia/Jakarta');
 
-// Fetch presence records for the class
+// Fetch class details
 $stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_kelas = :id');
 $stmt->bindParam(':id', $_GET['id']);
 $stmt->execute();
 $class = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Fetch students in the class
+$stmt = $pdo->prepare('SELECT * FROM detail_kelas JOIN pengguna ON detail_kelas.id_pengguna = pengguna.id_pengguna WHERE id_kelas = :id ORDER BY name');
+$stmt->bindParam(':id', $_GET['id']);
+$stmt->execute();
+$detail_class = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch presence records for the class
-$stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_kelas = :id_kelas');
-$stmt->bindParam(':id_kelas', $_GET['id']);
+// Fetch the total number of meetings
+$stmt = $pdo->prepare('SELECT MAX(pertemuan) AS total_pertemuan FROM presensi JOIN qrcodes ON presensi.id_qrcode = qrcodes.id_qrcode WHERE presensi.id_kelas = :id');
+$stmt->bindParam(':id', $_GET['id']);
+$stmt->execute();
+$meeting = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Fetch all presence records for the class
+$stmt = $pdo->prepare('SELECT * FROM presensi JOIN qrcodes ON presensi.id_qrcode = qrcodes.id_qrcode WHERE presensi.id_kelas = :id');
+$stmt->bindParam(':id', $_GET['id']);
 $stmt->execute();
 $presence = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
-// Fetch presence records for the class
-$stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_kelas = :id_kelas;');
-$stmt->bindParam(':id_kelas', $_GET['id']);
-$stmt->execute();
-$maxpresence = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Fetch user IDs from qrcodes table for the class
-$stmt = $pdo->prepare('SELECT id_user FROM qrcodes WHERE id_kelas = :id_kelas');
-$stmt->bindParam(':id_kelas', $_GET['id']);
-$stmt->execute();
-$user_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-// Initialize an array to hold user data
-$users = [];
-
-// Fetch user details from pengguna table based on the user IDs
-if (!empty($user_ids)) {
-    // Prepare an IN clause with placeholders for the user IDs
-    $placeholders = implode(',', array_fill(0, count($user_ids), '?'));
-
-    // Fetch user details
-    $stmt = $pdo->prepare("SELECT * FROM pengguna WHERE id IN ($placeholders)");
-    $stmt->execute($user_ids);
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// Loop through each user and fetch their presence records
-foreach ($users as $index => $user) {
-    $stmt = $pdo->prepare('SELECT * FROM presensi WHERE id_user = :id_user AND id_kelas = :id_kelas;');
-    $stmt->bindParam(':id_user', $user['id']);
-    $stmt->bindParam(':id_kelas', $_GET['id']);
-    $stmt->execute();
-    $userPresence = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Store presence records with the user index
-    $presenceRecords[$index] = $userPresence;
+// Function to check if a student was present at a specific meeting
+function isPresent($userId, $meeting, $presenceRecords) {
+    foreach ($presenceRecords as $record) {
+        if ($record['id_pengguna'] == $userId && $record['pertemuan'] == $meeting) {
+            return true;
+        }
+    }
+    return false;
 }
 ?>
 
@@ -199,40 +180,35 @@ foreach ($users as $index => $user) {
                         <th>No</th>
                         <th>NISN / NIM</th>
                         <th>Student Name</th>
-                        <?php for ($i = 0; $i < $maxpresence['pertemuan']; $i++) : ?>
+                        <?php for ($i = 0; $i < $meeting['total_pertemuan']; $i++) : ?>
                             <th>P.<?= $i + 1; ?></th>
                         <?php endfor ?>
                         <th>Percentage (%)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php for ($i = 0; $i < count($users); $i++) : ?>
+                    <?php for ($i = 0; $i < count($detail_class); $i++) : ?>
                         <tr>
                             <td><?= $i + 1; ?></td>
-                            <td><?= $users[$i]['username']; ?></td>
-                            <td><?= $users[$i]['name']; ?></td>
-                            <?php
-
-                            if (isset($maxpresence['pertemuan'])) {
-                                // Initialize an array to store presence status
-                                $presenceStatus = array_fill(0, $maxpresence['pertemuan'], '-');
-                            }
-
-                            // Populate the presence status based on actual records
-                            foreach ($presenceRecords[$i] as $record) {
-                                $presenceStatus[$record['pertemuan'] - 1] = 'Hadir';
-                            }
-
-                            // Output the presence status for each pertemuan
-                            for ($j = 0; $j < $maxpresence['pertemuan']; $j++) : ?>
-                                <td><?= $presenceStatus[$j]; ?></td>
-                            <?php endfor; ?>
-                            <td><?= (isset($maxpresence['pertemuan'])) ? number_format((count($presenceRecords[$i]) / $maxpresence['pertemuan']) * 100, 0) : '';?>%</td>
+                            <td><?= $detail_class[$i]['username']; ?></td>
+                            <td><?= $detail_class[$i]['name']; ?></td>
+                            <?php 
+                            $attendance_count = 0;
+                            for ($j = 0; $j < $meeting['total_pertemuan']; $j++) : 
+                                if (isPresent($detail_class[$i]['id_pengguna'], $j + 1, $presence)) {
+                                    $attendance_count++;
+                                    echo "<td>✓</td>";
+                                } else {
+                                    echo "<td>-</td>";
+                                }
+                            endfor;
+                            $percentage = ($attendance_count / $meeting['total_pertemuan']) * 100;
+                            ?>
+                            <td><?= round($percentage, 2); ?>%</td>
                         </tr>
                     <?php endfor; ?>
                 </tbody>
             </table>
-        </div>
         </div>
         <div class="buttons">
             <a href="index.php"><i class="fa-solid fa-house-chimney"></i> Back To Home</a>

@@ -35,10 +35,9 @@ if ($class['tanggal'] != $current_date || !($class['mulai'] <= $current_time && 
 
 $qrcode = null;
 if (isset($qr)) {
-    if ($qr['tanggal_pembuatan'] == '2024-06-08') {
+    if ($qr['tanggal_pembuatan'] == $current_date) {
         $qrcode = $qr['qr_code'];
     } else {
-        $current_date = '2024-06-08';
         $pertemuan = $qr['pertemuan'] + 1;
         $qrcode = $_GET['id'].'-'.$pertemuan.'-'.uniqid();
         
