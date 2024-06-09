@@ -11,11 +11,31 @@ $pdo = connectToDatabase();
 
 date_default_timezone_set('Asia/Jakarta');
 
-// Fetch presence records for the class
+// Fetch class details
 $stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_kelas = :id');
 $stmt->bindParam(':id', $_GET['id']);
 $stmt->execute();
 $class = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Fetch the total number of meetings
+$stmt = $pdo->prepare('SELECT MAX(pertemuan) AS total_pertemuan FROM presensi JOIN qrcodes ON presensi.id_qrcode = qrcodes.id_qrcode WHERE presensi.id_kelas = :id');
+$stmt->bindParam(':id', $_GET['id']);
+$stmt->execute();
+$meeting = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Fetch all presence records for the user in the class
+$stmt = $pdo->prepare('SELECT * FROM presensi JOIN qrcodes ON presensi.id_qrcode = qrcodes.id_qrcode WHERE presensi.id_pengguna = :id_user AND presensi.id_kelas = :id_kelas');
+$stmt->bindParam(':id_user', $_SESSION['user_id']);
+$stmt->bindParam(':id_kelas', $_GET['id']);
+$stmt->execute();
+$presence = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Create an array to check presence for each meeting
+$presenceArray = array();
+foreach ($presence as $pres) {
+    $presenceArray[$pres['pertemuan']] = $pres;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -56,7 +76,6 @@ $class = $stmt->fetch(PDO::FETCH_ASSOC);
             background-color: #ffffff;
             border-radius: 5px;
             box-shadow: 0 8px 10px rgba(0, 0, 0, 0.1);
-            /* overflow: hidden; */
         }
 
         table,
@@ -100,12 +119,10 @@ $class = $stmt->fetch(PDO::FETCH_ASSOC);
 
         button:hover {
             background-color: lightgreen;
-            /* Darker blue on hover */
         }
 
         button i {
             margin-right: 8px;
-            /* Space between icon and text */
         }
 
         @media print {
@@ -115,17 +132,14 @@ $class = $stmt->fetch(PDO::FETCH_ASSOC);
 
             .buttons {
                 display: none;
-                /* Hide buttons in print view */
             }
 
             a {
                 display: none;
-                /* Hide links in print view */
             }
 
             button {
                 display: none;
-                /* Hide buttons in print view */
             }
         }
     </style>
@@ -157,11 +171,11 @@ $class = $stmt->fetch(PDO::FETCH_ASSOC);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php for ($i = 0; $i < $maxpresence['pertemuan']; $i++) : ?>
+                    <?php for ($i = 0; $i < $meeting['total_pertemuan']; $i++) : ?>
                         <tr>
                             <td><?= $i + 1; ?></td>
-                            <td><?= in_array($i + 1, $presences) ? 'hadir' : '-'; ?></td>
-                            <td><?= in_array($i + 1, $presences) ? $dates[array_search($i + 1, $presences)] : '-'; ?></td>
+                            <td><?= isset($presenceArray[$i + 1]) ? '✓' : '-'; ?></td>
+                            <td><?= isset($presenceArray[$i + 1]) ? $presenceArray[$i + 1]['tanggal'] : '-'; ?></td>
                             <td><?= $class['pelajaran']; ?></td>
                             <td><?= $i + 1; ?></td>
                         </tr>
@@ -173,7 +187,6 @@ $class = $stmt->fetch(PDO::FETCH_ASSOC);
         <div class="buttons">
             <a href="index.php"><i class="fa-solid fa-house-chimney"></i> Back To Home</a>
         </div>
-    </section>
     </section>
 </body>
 

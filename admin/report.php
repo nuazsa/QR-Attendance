@@ -29,7 +29,7 @@ $stmt->bindParam(':id', $_GET['id']);
 $stmt->execute();
 $meeting = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Fetch all presence records for the class
+// Fetch all presence records for the Presence
 $stmt = $pdo->prepare('SELECT * FROM presensi JOIN qrcodes ON presensi.id_qrcode = qrcodes.id_qrcode WHERE presensi.id_kelas = :id');
 $stmt->bindParam(':id', $_GET['id']);
 $stmt->execute();
@@ -204,7 +204,7 @@ function isPresent($userId, $meeting, $presenceRecords) {
                             endfor;
                             $percentage = ($attendance_count / $meeting['total_pertemuan']) * 100;
                             ?>
-                            <td><?= round($percentage, 2); ?>%</td>
+                            <td><?= round($percentage); ?>%</td>
                         </tr>
                     <?php endfor; ?>
                 </tbody>

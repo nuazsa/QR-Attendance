@@ -18,6 +18,7 @@ $pdo = connectToDatabase();
 
 date_default_timezone_set('Asia/Jakarta');
 $current_date = date('Y-m-d');
+$current_time = date('H:i');
 
 $stmt = $pdo->prepare('SELECT * FROM qrcodes WHERE id_kelas = :id_kelas ORDER BY tanggal_pembuatan DESC');
 $stmt->bindParam(':id_kelas', $_GET['id']);
@@ -32,11 +33,9 @@ $stmt->execute();
 
 $presence = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
 $qrCode = isset($qr['qr_code']) ? $qr['qr_code'] : null;
 $classId = isset($_GET['id']) ? $_GET['id'] : null;
 
-// var_dump($qr['qr_code']); exit;
 if ($presence) {
     if ($presence['tanggal'] == $current_date) {
         header('Location: success.php?id='.$_GET['id']);
@@ -44,6 +43,19 @@ if ($presence) {
     }
 }
 
+$stmt = $pdo->prepare('SELECT * FROM kelas WHERE id_kelas = :id_kelas');
+$stmt->bindParam(':id_kelas', $_GET['id']);
+$stmt->execute();
+
+$class = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($class['tanggal'] != $current_date || !($class['mulai'] <= $current_time && $class['selesai'] >= $current_time)) {
+    echo "<script>
+            alert('Class hasnt started yet');
+            window.location.href = 'index.php';
+          </script>";
+    exit;
+}
 ?>
 
 <!doctype html>
