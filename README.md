@@ -2,6 +2,15 @@
 
 QR Attendance System adalah aplikasi web yang memungkinkan pengguna untuk mencatat kehadiran menggunakan kode QR. Aplikasi ini dirancang untuk memudahkan pengelolaan kehadiran di kelas atau acara lainnya.
 
+## Demo
+https://qrattend.nuazsa.my.id/
+- Login guru:
+  - user: 00000000
+  - pw: admin
+- Login siswa:
+  - user: 17220160
+  - pw: 17.4A.02
+
 ## Instalasi Lokal
 
 Ikuti langkah-langkah berikut untuk menginstal dan menjalankan proyek ini secara lokal:
@@ -37,7 +46,7 @@ Atur koneksi database di file connection.php yang ada di folder component:
 <?php
 function connectToDatabase() {
     $host = 'localhost';
-    $db = 'attendance_db';
+    $db = 'qrattend';
     $user = 'root';
     $pass = '';
     $charset = 'utf8mb4';
@@ -72,7 +81,7 @@ function connectToDatabase() {
 ├── admin
 │   ├── index.php
 │   ├── report.php
-│   ├── scan.php
+│   ├── barcode.php
 ├── component
 │   ├── css
 │   ├── js
@@ -80,7 +89,7 @@ function connectToDatabase() {
 ├── user
 │   ├── index.php
 │   ├── history.php
-│   ├── barcode.php
+│   ├── scan.php
 ├── qrattend.sql
 ├── README.md
 ├── index.php
