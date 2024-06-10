@@ -46,7 +46,7 @@ Atur koneksi database di file connection.php yang ada di folder component:
 <?php
 function connectToDatabase() {
     $host = 'localhost';
-    $db = 'attendance_db';
+    $db = 'qrattend';
     $user = 'root';
     $pass = '';
     $charset = 'utf8mb4';
@@ -81,7 +81,7 @@ function connectToDatabase() {
 ├── admin
 │   ├── index.php
 │   ├── report.php
-│   ├── scan.php
+│   ├── barcode.php
 ├── component
 │   ├── css
 │   ├── js
@@ -89,7 +89,7 @@ function connectToDatabase() {
 ├── user
 │   ├── index.php
 │   ├── history.php
-│   ├── barcode.php
+│   ├── scan.php
 ├── qrattend.sql
 ├── README.md
 ├── index.php
