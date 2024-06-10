@@ -202,7 +202,10 @@ function isPresent($userId, $meeting, $presenceRecords) {
                                     echo "<td>-</td>";
                                 }
                             endfor;
-                            $percentage = ($attendance_count / $meeting['total_pertemuan']) * 100;
+                            $percentage = 0;
+                            if ($meeting['total_pertemuan'] > 0) {
+                                $percentage = ($attendance_count / $meeting['total_pertemuan']) * 100;
+                            }
                             ?>
                             <td><?= round($percentage); ?>%</td>
                         </tr>
