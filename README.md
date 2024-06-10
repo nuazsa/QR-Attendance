@@ -2,6 +2,15 @@
 
 QR Attendance System adalah aplikasi web yang memungkinkan pengguna untuk mencatat kehadiran menggunakan kode QR. Aplikasi ini dirancang untuk memudahkan pengelolaan kehadiran di kelas atau acara lainnya.
 
+## Demo
+https://qrattend.nuazsa.my.id/
+- Login guru:
+  - user: 00000000
+  - pw: admin
+- Login siswa:
+  - user: 17220160
+  - pw: 17.4A.02
+
 ## Instalasi Lokal
 
 Ikuti langkah-langkah berikut untuk menginstal dan menjalankan proyek ini secara lokal:
